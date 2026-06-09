@@ -21,7 +21,7 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    html { scroll-behavior: smooth; height: 100%; overflow-x: hidden; }
+    html { height: 100%; overflow-x: hidden; }
 
     body {
       font-family: 'Montserrat', sans-serif;
@@ -597,7 +597,7 @@ const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); }
   });
-}, {threshold: 0.15});
+}, {threshold: 0.05});
 document.querySelectorAll('.sr').forEach(el => io.observe(el));
 
 // ── SCRATCH CARDS ──
