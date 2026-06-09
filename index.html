@@ -21,7 +21,7 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    html { scroll-behavior: smooth; height: 100%; }
+    html { scroll-behavior: smooth; height: 100%; overflow-x: hidden; }
 
     body {
       font-family: 'Montserrat', sans-serif;
@@ -29,7 +29,7 @@
       color: var(--text);
       overflow-x: hidden;
       overflow-y: hidden; /* Prevent scrolling until curtain opens */
-      width: 100%; min-height: 100vh; min-height: 100dvh;
+      width: 100%; max-width: 100vw; min-height: 100vh; min-height: 100dvh;
     }
 
     /* ─── SCATTERED BACKGROUND ASSETS ─── */
@@ -37,16 +37,35 @@
       position: fixed; inset: 0;
       pointer-events: none; z-index: 0;
       overflow: hidden;
+      width: 100%; max-width: 100vw;
     }
     .bg-scatter img {
       position: absolute;
       opacity: 0.4;
       max-width: 120px;
       animation: float 8s ease-in-out infinite alternate;
+      /* Clamp floaters so they never poke outside the viewport */
+      max-width: min(120px, 25vw);
     }
     @keyframes float {
       0% { transform: translateY(0px) rotate(0deg); }
       100% { transform: translateY(-15px) rotate(3deg); }
+    }
+
+    /* ─── BLUR OVERLAY BEHIND CURTAINS ─── */
+    #curtain-blur {
+      position: fixed; inset: 0;
+      z-index: 1999; /* Just below curtain (2000) but above content (1) */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(239, 236, 228, 0.25);
+      pointer-events: none;
+      transition: opacity 1.2s ease 0.3s, backdrop-filter 1.2s ease 0.3s;
+    }
+    #curtain-blur.removed {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
     }
 
     /* ─── IMAGE CURTAINS ─── */
@@ -125,6 +144,7 @@
       position: relative; z-index: 1;
       max-width: 500px; margin: 0 auto;
       padding: env(safe-area-inset-top,0) 15px env(safe-area-inset-bottom,0);
+      overflow-x: hidden;
     }
 
     section {
@@ -156,9 +176,10 @@
       position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;
-      opacity: 0; transition: opacity 1s ease 1s; animation: bounceArrow 2s infinite ease-in-out;
+      opacity: 0; transition: opacity 1.4s ease; animation: bounceArrow 2s infinite ease-in-out;
+      pointer-events: none;
     }
-    .hero-section.vis .scroll-arrow { opacity: 1; }
+    .scroll-arrow.revealed { opacity: 1; pointer-events: auto; }
     @keyframes bounceArrow {
       0%, 100% { transform: translate(-50%, 0); }
       50% { transform: translate(-50%, 10px); }
@@ -288,12 +309,17 @@
       50% { transform: scale(1.05); opacity: 1; }
     }
 
+    @keyframes fadeInStd {
+      0%   { opacity: 0; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
     #save-the-date-reveal {
       width: 200px; margin-top: 10px; display: none; opacity: 0;
     }
     #save-the-date-reveal.show {
-      display: block; opacity: 1;
-      animation: breathAnim 3s infinite ease-in-out;
+      display: block;
+      animation: fadeInStd 1.2s ease forwards;
     }
 
     /* ─── VENUE & LOCATION ─── */
@@ -307,7 +333,21 @@
     .sr.vis .venue-card { animation: floatCard 5s ease-in-out infinite; }
     .venue-card:hover { box-shadow: 0 15px 30px rgba(0,0,0,.08); animation-play-state: paused; }
     
-    .venue-name { font-family: 'Cinzel', serif; font-size: 1.4rem; color: var(--crimson); margin-bottom: 0.5rem; }
+    .venue-name { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--crimson); margin-bottom: 1rem; letter-spacing: 1px; }
+    
+    .venue-info-row {
+      display: flex; align-items: flex-start; gap: 10px; margin-bottom: 0.6rem; justify-content: center;
+    }
+    .venue-icon {
+      width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;
+      stroke: var(--gold); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .venue-detail {
+      font-family: 'EB Garamond', serif; font-style: italic;
+      font-size: 1.25rem; color: var(--text-muted); line-height: 1.5; text-align: left;
+    }
+    .venue-detail strong { font-style: normal; color: var(--crimson); font-size: 1.3rem; }
+    
     .theme-btn {
       display: inline-flex; align-items: center; gap: 8px; margin-top: 15px;
       background: var(--crimson); color: #EFECE4; text-decoration: none;
@@ -360,6 +400,8 @@
   <img src="assets/Asset 4.png" style="top: 55%; left: -2%; animation-delay: 2s;">
   <img src="assets/Asset 5.png" style="top: 75%; right: 5%; animation-delay: 3s; max-width: 250px;">
 </div>
+
+<div id="curtain-blur"></div>
 
 <div id="curtain">
   <div class="c-wing c-left">
@@ -449,12 +491,35 @@
   <section class="sr">
     <div class="venue-card">
       <h2 class="venue-name">The Venue</h2>
-      <p style="font-family: 'EB Garamond', serif; font-style: italic; font-size: 1.05rem; color: var(--text-muted); line-height: 1.4;">
-        Join us in celebrating our special day on<br>
-        <strong>June 26, 2026 at 6:00 PM</strong><br>
-        Jewel Hotel 
-      </p>
+
+      <div class="venue-info-row">
+        <svg class="venue-icon" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <p class="venue-detail">Join us on <strong>June 26, 2026</strong></p>
+      </div>
+
+      <div class="venue-info-row">
+        <svg class="venue-icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <p class="venue-detail">Doors open at <strong>6:00 PM</strong></p>
+      </div>
+
+      <div class="venue-info-row">
+        <svg class="venue-icon" viewBox="0 0 24 24">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <p class="venue-detail"><strong>Jewel Hotel</strong></p>
+      </div>
+
       <a href="https://maps.app.goo.gl/zRyoe2GVugCdibTN9" target="_blank" class="theme-btn">
+        <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         View Location
       </a>
     </div>
@@ -504,15 +569,24 @@ function spawnGoldenConfetti(count = 120){
 // ── CURTAIN LOGIC ──
 const curtain = document.getElementById('curtain');
 const curtainBadge = document.getElementById('curtain-badge');
+const curtainBlur = document.getElementById('curtain-blur');
+const scrollArrow = document.querySelector('.scroll-arrow');
 let opened = false;
 function openCurtain(){
   if(opened) return;
   opened = true;
   curtain.classList.add('open');
   document.body.style.overflowY = 'auto';
+  // Remove blur overlay
+  curtainBlur.classList.add('removed');
   // Trigger visibility for hero instantly
   document.querySelector('.hero-section').classList.add('vis');
   
+  // Reveal "Swipe to see our story" after curtain animation completes
+  setTimeout(() => {
+    scrollArrow.classList.add('revealed');
+  }, 1800);
+
   // Golden confetti shower
   setTimeout(() => spawnGoldenConfetti(), 800);
 }
