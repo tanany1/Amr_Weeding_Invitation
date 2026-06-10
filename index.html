@@ -21,9 +21,10 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    html { height: 100%; overflow-x: hidden; }
+    html { height: 100%; overflow-x: hidden; scroll-behavior: smooth;}
 
     body {
+      scroll-snap-type: y proximity;
       font-family: 'Montserrat', sans-serif;
       background: var(--bg-color);
       color: var(--text);
@@ -159,6 +160,7 @@
       min-height: 100vh; /* Fallback for older browsers */
       min-height: 100dvh; /* Add this: Adapts perfectly to mobile URL bars */
       justify-content: center;
+      scroll-snap-align: start;
     }
     .corner-tl, .corner-tr {
       position: absolute; top: 0px; width: 130px; mix-blend-mode: multiply; z-index: -1; 
@@ -581,6 +583,9 @@ const curtain = document.getElementById('curtain');
 const curtainBadge = document.getElementById('curtain-badge');
 const curtainBlur = document.getElementById('curtain-blur');
 const scrollArrow = document.querySelector('.scroll-arrow');
+scrollArrow.addEventListener('click', () => {
+  document.getElementById('our-story').scrollIntoView({ behavior: 'smooth' });
+});
 let opened = false;
 function openCurtain(){
   if(opened) return;
