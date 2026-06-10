@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-scroll">
+<body class="no-scroll">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -21,15 +22,18 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    html { height: 100%; overflow-x: hidden; scroll-behavior: smooth;}
+    html { height: 100%; overflow-x: hidden; scroll-snap-type: y proximity;}
+    html.no-scroll, body.no-scroll {
+    overflow: hidden !important;
+    touch-action: none; /* This completely disables mobile touch scrolling */
+    height: 100%;
+    }
 
     body {
-      scroll-snap-type: y proximity;
       font-family: 'Montserrat', sans-serif;
       background: var(--bg-color);
       color: var(--text);
       overflow-x: hidden;
-      overflow-y: hidden; /* Prevent scrolling until curtain opens */
       width: 100%; max-width: 100vw; min-height: 100vh; min-height: 100dvh;
     }
 
@@ -193,6 +197,7 @@
     .sr {
       opacity: 0; transform: translateY(40px) scale(0.95);
       transition: opacity 0.8s cubic-bezier(.215,.61,.355,1), transform 0.8s cubic-bezier(.215,.61,.355,1);
+      will-change: transform, opacity; /* Add this: Forces GPU acceleration to prevent lag */
     }
     .sr.vis { opacity: 1; transform: translate(0) scale(1); }
 
@@ -663,9 +668,9 @@ document.querySelectorAll('.scratch-canvas').forEach(canvas => {
       spawnGoldenConfetti(30);
       if(Object.values(states).every(v=>v)){
         setTimeout(() => {
-          document.getElementById('save-the-date-reveal').classList.add('show');
-          spawnGoldenConfetti(100);
-        }, 300);
+          document.documentElement.classList.remove('no-scroll');
+          document.body.classList.remove('no-scroll');
+        }, 1600);
       }
     }
   };
