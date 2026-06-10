@@ -60,7 +60,7 @@
       -webkit-backdrop-filter: blur(12px);
       background: rgba(239, 236, 228, 0.25);
       pointer-events: none;
-      transition: opacity 1.2s ease 0.3s, backdrop-filter 1.2s ease 0.3s;
+      transition: opacity 1.2s ease 0.3s;
     }
     #curtain-blur.removed {
       opacity: 0;
@@ -156,9 +156,9 @@
 
     /* ─── HERO ─── */
     .hero-section {
-      min-height: 100vh; 
+      min-height: 100vh; /* Fallback for older browsers */
+      min-height: 100dvh; /* Add this: Adapts perfectly to mobile URL bars */
       justify-content: center;
-
     }
     .corner-tl, .corner-tr {
       position: absolute; top: 0px; width: 130px; mix-blend-mode: multiply; z-index: -1; 
@@ -173,7 +173,8 @@
     }
 
     .scroll-arrow {
-      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      position: absolute; bottom: calc(40px + env(safe-area-inset-bottom, 0)); 
+      left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;
       opacity: 0; transition: opacity 1.4s ease; animation: bounceArrow 2s infinite ease-in-out;
@@ -232,7 +233,11 @@
     .story-img-wrap:hover { transform: scale(1.03); }
     
     .story-img-wrap img {
-      width: 100%; border-radius: 16px; position: relative; z-index: 2; display: block;
+      width: 100%; 
+      aspect-ratio: 2 / 3; /* Add this: Forces a perfect square */
+      object-fit: cover;   /* Add this: Prevents image stretching */
+      border-radius: 16px; 
+      position: relative; z-index: 2; display: block;
       box-shadow: 0 6px 15px rgba(0,0,0,0.1);
       filter: grayscale(40%) sepia(30%) contrast(1.1) brightness(1.05);
     }
@@ -430,7 +435,12 @@
     <h2 class="section-title">Our Story</h2>
     <div class="story-timeline">
       <svg class="story-svg-path" viewBox="0 0 100 1000" preserveAspectRatio="none">
-        <path d="M50,0 Q90,125 50,250 T50,500 T50,750 T50,1000" fill="none" stroke="rgba(82,59,37, 0.4)" stroke-width="2" stroke-dasharray="12 12"/>
+        <path d="M50,0 Q90,125 50,250 T50,500 T50,750 T50,1000" 
+              fill="none" 
+              stroke="rgba(82,59,37, 0.4)" 
+              stroke-width="2" 
+              stroke-dasharray="12 12" 
+              vector-effect="non-scaling-stroke"/>
       </svg>
       
       <div class="story-item left sr">
@@ -576,9 +586,15 @@ function openCurtain(){
   if(opened) return;
   opened = true;
   curtain.classList.add('open');
-  document.body.style.overflowY = 'auto';
+  
+  // Delay scrollbar appearance by 1.2s to prevent the layout from jumping
+  setTimeout(() => {
+    document.body.style.overflowY = 'auto';
+  }, 1200);
+
   // Remove blur overlay
   curtainBlur.classList.add('removed');
+  
   // Trigger visibility for hero instantly
   document.querySelector('.hero-section').classList.add('vis');
   
